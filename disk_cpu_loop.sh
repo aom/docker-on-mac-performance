@@ -4,7 +4,7 @@ COUNT=$1
 DOCKER_HOST_DESCRIPTION=$2
 TEST_SETUP_DESCRIPTION=$3
 
-if [ $setup = "" ]; then
+if [ "$TEST_SETUP_DESCRIPTION" = "" ]; then
   echo "Usage:"
   echo "  disk_cpu_loop.sh <number of test runs> <describe host> <describe setup>"
   echo ""
