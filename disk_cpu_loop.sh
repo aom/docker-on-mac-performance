@@ -51,7 +51,9 @@ GeekbenchBenchmark ()
 {
   VM=$1
 
-  eval $(docker-machine env $VM)
+  if [ "$VM" != "docker4mac" ]; then
+    eval $(docker-machine env $VM)
+  fi
 
   i=0
   while [ $i -lt $COUNT ]; do
@@ -78,7 +80,9 @@ SimpleBenchmark ()
 {
   VM=$1
 
-  eval $(docker-machine env $VM)
+  if [ "$VM" != "docker4mac" ]; then
+    eval $(docker-machine env $VM)
+  fi
 
   i=0
   while [ $i -lt $COUNT ]; do
@@ -109,6 +113,19 @@ Cleanup ()
   docker-machine ls
   docker-machine rm $VM -y
 }
+
+echo "Run tests on Docker for Mac? Y/n"
+read DOCKER4MAC
+
+if [ "$DOCKER4MAC" != "n" ]; then
+  echo "------------------------------"
+  echo "Benchmarking Docker for Mac"
+  echo "------------------------------"
+  echo ""
+
+  VM=docker4mac
+  Benchmark $VM
+fi
 
 CPU_COUNT_FOR_VMS=$((`sysctl -n hw.ncpu` - 1))
 DISK_SIZE=20000
