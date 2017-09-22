@@ -1,9 +1,15 @@
 #!/usr/bin/env sh
 
+set -e
+
 BENCHMARK_TOOL=$1
 COUNT=$2
 DOCKER_HOST_DESCRIPTION=$3
 TEST_SETUP_DESCRIPTION=$4
+
+VM_NAME_FUSION=fusion
+VM_NAME_VIRTUALBOX=virtualbox
+VM_NAME_XHYVE=xhyve
 
 if [ "$TEST_SETUP_DESCRIPTION" = "" ]; then
   echo "Usage:"
@@ -15,11 +21,16 @@ if [ "$TEST_SETUP_DESCRIPTION" = "" ]; then
   echo "  all"
   echo ""
   echo "Descriptions should not include dashes or empty spaces. Ie."
-  echo "  disk_cpu_loop.sh geekbench 3 imac_5k_2017 7cores_ssd"
-  echo "  disk_cpu_loop.sh geekbench 3 mbp_15_2015 7cores_ssd"
-  echo "  disk_cpu_loop.sh geekbench 3 imac_5k_2017 7cores_ramdisk"
+  echo "  disk_cpu_loop.sh geekbench 1 imac_5k_2017 7cores_ssd"
+  echo "  disk_cpu_loop.sh geekbench 1 mbp_15_2015 7cores_ssd"
+  echo "  disk_cpu_loop.sh geekbench 1 imac_5k_2017 7cores_ramdisk"
+  echo ""
   exit
 fi
+
+echo "⚠️  This tool will create and remove docker-machines with following names without asking:"
+echo "$VM_NAME_FUSION, $VM_NAME_VIRTUALBOX, $VM_NAME_XHYVE"
+echo ""
 
 Benchmark () {
   case $BENCHMARK_TOOL in
@@ -104,11 +115,11 @@ DISK_SIZE=20000
 MEMORY=2048
 
 echo "------------------------------"
-echo "Benchamarking VMWare Fusion 8"
+echo "Benchmarking VMWare Fusion 8"
 echo "------------------------------"
 echo ""
 
-VM=fusion
+VM=$VM_NAME_FUSION
 
 docker-machine create \
   --driver vmwarefusion \
@@ -121,11 +132,11 @@ Benchmark $VM
 Cleanup $VM
 
 echo "------------------------------"
-echo "Benchamarking VirtualBox 5"
+echo "Benchmarking VirtualBox 5"
 echo "------------------------------"
 echo ""
 
-VM=virtualbox
+VM=$VM_NAME_VIRTUALBOX
 
 docker-machine create \
   --driver virtualbox \
@@ -138,11 +149,11 @@ Benchmark $VM
 Cleanup $VM
 
 echo "------------------------------"
-echo "Benchamarking xhyve"
+echo "Benchmarking xhyve"
 echo "------------------------------"
 echo ""
 
-VM=xhyve
+VM=$VM_NAME_XHYVE
 
 docker-machine create \
   --driver xhyve \
