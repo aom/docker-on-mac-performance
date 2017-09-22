@@ -1,21 +1,42 @@
 #!/usr/bin/env sh
 
-COUNT=$1
-DOCKER_HOST_DESCRIPTION=$2
-TEST_SETUP_DESCRIPTION=$3
+BENCHMARK_TOOL=$1
+COUNT=$2
+DOCKER_HOST_DESCRIPTION=$3
+TEST_SETUP_DESCRIPTION=$4
 
 if [ "$TEST_SETUP_DESCRIPTION" = "" ]; then
   echo "Usage:"
-  echo "  disk_cpu_loop.sh <number of test runs> <describe host> <describe setup>"
+  echo "  disk_cpu_loop.sh <becnhamrk tool> <number of test runs> <describe host> <describe setup>"
+  echo ""
+  echo "Available tools:"
+  echo "  geekbench (https://hub.docker.com/r/mattipaksula/geekbench/)"
+  echo "  simple (https://hub.docker.com/r/misterbisson/simple-container-benchmarks/)"
+  echo "  all"
   echo ""
   echo "Descriptions should not include dashes or empty spaces. Ie."
-  echo "  disk_cpu_loop.sh 3 imac_5k_2017 7cores_ssd"
-  echo "  disk_cpu_loop.sh 3 mbp_15_2015 7cores_ssd"
-  echo "  disk_cpu_loop.sh 3 imac_5k_2017 7cores_ramdisk"
+  echo "  disk_cpu_loop.sh geekbench 3 imac_5k_2017 7cores_ssd"
+  echo "  disk_cpu_loop.sh geekbench 3 mbp_15_2015 7cores_ssd"
+  echo "  disk_cpu_loop.sh geekbench 3 imac_5k_2017 7cores_ramdisk"
   exit
 fi
 
-Benchmark ()
+Benchmark () {
+  case $BENCHMARK_TOOL in
+    "geekbench")
+      GeekbenchBenchmark $1
+      ;;
+    "simple")
+      SimpleBenchmark $1
+      ;;
+    "all")
+      GeekbenchBenchmark $1
+      SimpleBenchmark $1
+      ;;
+  esac
+}
+
+GeekbenchBenchmark ()
 {
   VM=$1
 
@@ -24,7 +45,34 @@ Benchmark ()
   i=0
   while [ $i -lt $COUNT ]; do
     TIMESTAMP=`date "+%Y%m%d%H%M%S"`
-    LOG_FILE=logs/benchmark-$DOCKER_HOST_DESCRIPTION-$TEST_SETUP_DESCRIPTION-$VM-$i-$TIMESTAMP.log
+    LOG_FILE=logs/geekbench-$DOCKER_HOST_DESCRIPTION-$TEST_SETUP_DESCRIPTION-$VM-$i-$TIMESTAMP.log
+    echo "------------------------------"
+    echo $LOG_FILE
+    echo "------------------------------"
+    echo ""
+
+    docker run \
+      --name=geekbench \
+      mattipaksula/geekbench | tee $LOG_FILE
+
+    docker rm $(docker ps -a -q)
+
+    i=$[$i+1]
+    echo ""
+    sleep 1
+  done
+}
+
+SimpleBenchmark ()
+{
+  VM=$1
+
+  eval $(docker-machine env $VM)
+
+  i=0
+  while [ $i -lt $COUNT ]; do
+    TIMESTAMP=`date "+%Y%m%d%H%M%S"`
+    LOG_FILE=logs/simple-$DOCKER_HOST_DESCRIPTION-$TEST_SETUP_DESCRIPTION-$VM-$i-$TIMESTAMP.log
     echo "------------------------------"
     echo $LOG_FILE
     echo "------------------------------"
