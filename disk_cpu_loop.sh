@@ -64,11 +64,17 @@ GeekbenchBenchmark ()
     echo "------------------------------"
     echo ""
 
-    docker run \
-      --name=geekbench \
-      mattipaksula/geekbench | tee $LOG_FILE
+    docker run -d \
+      --name=geekbench4 \
+      -e "upload=upload" \
+      -e "email=$GEEKBENCH4_EMAIL" \
+      -e "key=$GEEKBENCH4_KEY" \
+      aarreoskari/geekbench4
 
-    docker rm $(docker ps -a -q)
+    CONTAINER_ID=$(docker ps -aqf "name=geekbench4")
+
+    docker logs -f $CONTAINER_ID | tee $LOG_FILE
+    docker rm $CONTAINER_ID
 
     i=$[$i+1]
     echo ""
